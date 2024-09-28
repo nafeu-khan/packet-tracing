@@ -4,7 +4,7 @@ def analyze_ip_headers(pcap_file):
     packets = rdpcap(pcap_file)
 
     for i, packet in enumerate(packets):
-        print(f"\n--- Packet {i+1} ---")
+        print(f"--- Packet {i+1} ---")
         if (i >6):
             break
         if IP in packet:
@@ -22,7 +22,8 @@ def analyze_ip_headers(pcap_file):
             print(f"  Fragment Offset: {ip_layer.frag}")
             print(f"  Time to Live: {ip_layer.ttl}")
             print(f"  Identification: {ip_layer.id}")
-
+        else :
+            print("Packet does not contain either IPv4 layer.")
         if IPv6 in packet:
             ipv6_layer = packet[IPv6]
             print("IPv6 Header:")
@@ -36,7 +37,7 @@ def analyze_ip_headers(pcap_file):
             print(f"  Hop Limit: {ipv6_layer.hlim}")
 
         else:
-            print("Packet does not contain IPv4 or IPv6 layer.")
+            print("Packet does not contain IPv6 layer.")
 
 if __name__ == "__main__":
     pcap_file = 'router-1.pcap'
