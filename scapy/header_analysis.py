@@ -1,4 +1,4 @@
-from scapy.all import rdpcap, IP, IPv6
+from scapy.all import rdpcap, IP, IPv6,Ether
 
 def analyze_ip_headers(pcap_file):
     packets = rdpcap(pcap_file)
@@ -38,7 +38,16 @@ def analyze_ip_headers(pcap_file):
 
         else:
             print("Packet does not contain IPv6 layer.")
+def analyse_ether(pcap_file):
+    packets = rdpcap(pcap_file)
+
+    for i,packet in enumerate(packets):
+        ether_layer = packet[Ether]
+        if i>1: break
+        # show all datalink/ip/transport
+        print(ether_layer.show()) 
 
 if __name__ == "__main__":
     pcap_file = 'router-1.pcap'
     analyze_ip_headers(pcap_file)
+    analyse_ether(pcap_file)
