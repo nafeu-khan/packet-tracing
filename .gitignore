@@ -1,2 +1,5 @@
 netVenv/ 
 .vscode
+scapy/src/
+scapy/practice/*.dump
+scapy/practice/*.pcap
