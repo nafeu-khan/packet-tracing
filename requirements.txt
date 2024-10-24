@@ -1,2 +1,2 @@
 pyshark=0.6
-scapy = 2.5.0
+scapy == 2.5.0
