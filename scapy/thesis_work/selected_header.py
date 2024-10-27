@@ -77,14 +77,14 @@ def analyze_selected_headers(pcap_file):
         summary_writer.writeheader()
 
         with PcapReader(pcap_file) as reader:
-            batch_update = 10000
-            progress = tqdm(desc="Reading packets", unit="pkt", total=batch_update)
+            # batch_update = 10000
+            progress = tqdm(desc="Reading packets", unit="pkt")#, total=batch_update)
 
             for i, packet in enumerate(reader, start=1):
                 summary_counts["Total Packets"] += 1
                 packet_number = i
-                if i > 1000000:
-                    break
+                # if i > 1000000:
+                #     break
 
                 if IP in packet:
                     summary_counts["IPv4 Packets"] += 1
@@ -121,12 +121,26 @@ def analyze_selected_headers(pcap_file):
                         tcp_connections.add((packet[IPv6].src, tcp_layer.sport, packet[IPv6].dst, tcp_layer.dport))
                     
                     csv_writers["tcp_headers.csv"].writerow({
-                        "Source IP": packet[IP].src,
-                        "Destination IP": packet[IP].dst,
+                        "Source IP": packet[IP].src if IP in packet else packet[IPv6].src,
+                        "Destination IP": packet[IP].dst if IP in packet else packet[IPv6].dst,
                         "Packet Number": packet_number,
                         "Reserved": tcp_layer.reserved,
                         "CWR": bool(tcp_layer.flags & 0x80),
                         "ECE": bool(tcp_layer.flags & 0x40)
+                    })
+                elif UDP in packet:
+                        summary_counts["UDP Packets"] += 1
+                        udp_layer = packet[UDP]
+                        csv_writers["udp_headers.csv"].writerow({
+                            "Packet Number": packet_number,
+                            "UDP Length": udp_layer.len
+                        })
+                elif ICMP in packet:
+                    summary_counts["ICMP Packets"] += 1
+                    icmp_layer = packet[ICMP]
+                    csv_writers["icmp_headers.csv"].writerow({
+                        "Packet Number": packet_number,
+                        "ICMP Type": icmp_layer.type
                     })
 
                 elif SCTP in packet:
@@ -152,8 +166,8 @@ def analyze_selected_headers(pcap_file):
                         "Packet Number": packet_number,
                     })
 
-                if i % batch_update == 0:
-                    progress.update(batch_update)
+                # if i % batch_update == 0:
+                progress.update(1)
 
             progress.close()
 
@@ -171,5 +185,5 @@ def analyze_selected_headers(pcap_file):
         summary_file.close()
 
 if __name__ == "__main__":
-    pcap_file = "router-1.pcap" 
+    pcap_file = "split_trace_1.pcap" 
     analyze_selected_headers(pcap_file)
