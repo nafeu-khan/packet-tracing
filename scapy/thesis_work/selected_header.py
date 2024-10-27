@@ -83,8 +83,6 @@ def analyze_selected_headers(pcap_file):
             for i, packet in enumerate(reader, start=1):
                 summary_counts["Total Packets"] += 1
                 packet_number = i
-                # if i > 1000000:
-                #     break
 
                 if IP in packet:
                     summary_counts["IPv4 Packets"] += 1
@@ -115,10 +113,11 @@ def analyze_selected_headers(pcap_file):
                     summary_counts["TCP Packets"] += 1
                     tcp_layer = packet[TCP]
                     
-                    if IP in packet:
-                        tcp_connections.add((packet[IP].src, tcp_layer.sport, packet[IP].dst, tcp_layer.dport))
-                    elif IPv6 in packet:
-                        tcp_connections.add((packet[IPv6].src, tcp_layer.sport, packet[IPv6].dst, tcp_layer.dport))
+                    if tcp_layer.flags == 18:  #SYN-ACK 
+                        if IP in packet:
+                            tcp_connections.add((packet[IP].src, tcp_layer.sport, packet[IP].dst, tcp_layer.dport))
+                        elif IPv6 in packet:
+                            tcp_connections.add((packet[IPv6].src, tcp_layer.sport, packet[IPv6].dst, tcp_layer.dport))
                     
                     csv_writers["tcp_headers.csv"].writerow({
                         "Source IP": packet[IP].src if IP in packet else packet[IPv6].src,
@@ -166,7 +165,6 @@ def analyze_selected_headers(pcap_file):
                         "Packet Number": packet_number,
                     })
 
-                # if i % batch_update == 0:
                 progress.update(1)
 
             progress.close()
@@ -182,7 +180,7 @@ def analyze_selected_headers(pcap_file):
     finally:
         for csv_file in csv_files.values():
             csv_file.close()
-        summary_file.close()
+        if summary_file:       summary_file.close() 
 
 if __name__ == "__main__":
     pcap_file = "split_trace_1.pcap" 
