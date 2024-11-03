@@ -47,18 +47,18 @@ def analyze_selected_headers(pcap_file):
         }
     }
     
-    summary_counts = {
-        "Total Packets": 0,
-        "IPv4 Packets": 0,
-        "IPv6 Packets": 0,
-        "TCP Packets": 0,
-        "UDP Packets": 0,
-        "ICMP Packets": 0,
-        "SCTP Packets": 0,
-        "TCP Connections":0,
-        "SCTP Connections":0,
-        "Other Protocols": 0
-    }
+    # summary_counts = {
+    #     "Total Packets": 0,
+    #     "IPv4 Packets": 0,
+    #     "IPv6 Packets": 0,
+    #     "TCP Packets": 0,
+    #     "UDP Packets": 0,
+    #     "ICMP Packets": 0,
+    #     "SCTP Packets": 0,
+    #     "TCP Connections":0,
+    #     "SCTP Connections":0,
+    #     "Other Protocols": 0
+    # }
     
     csv_files = {}
     csv_writers = {}
@@ -71,21 +71,21 @@ def analyze_selected_headers(pcap_file):
             csv_files[filename] = csv_file
             csv_writers[filename] = writer
 
-        summary_filename = "summary.csv"
-        summary_file = open(summary_filename, 'w', newline='', encoding='utf-8')
-        summary_writer = csv.DictWriter(summary_file, fieldnames=summary_counts.keys())
-        summary_writer.writeheader()
+        # summary_filename = "summary.csv"
+        # summary_file = open(summary_filename, 'w', newline='', encoding='utf-8')
+        # summary_writer = csv.DictWriter(summary_file, fieldnames=summary_counts.keys())
+        # summary_writer.writeheader()
 
         with PcapReader(pcap_file) as reader:
             # batch_update = 10000
             progress = tqdm(desc="Reading packets", unit="pkt")#, total=batch_update)
 
             for i, packet in enumerate(reader, start=1):
-                summary_counts["Total Packets"] += 1
+                # summary_counts["Total Packets"] += 1
                 packet_number = i
 
                 if IP in packet:
-                    summary_counts["IPv4 Packets"] += 1
+                    # summary_counts["IPv4 Packets"] += 1
                     ip_layer = packet[IP]
                     csv_writers["ipv4_headers.csv"].writerow({
                         "Packet Number": packet_number,
@@ -98,7 +98,7 @@ def analyze_selected_headers(pcap_file):
                     })
 
                 elif IPv6 in packet:
-                    summary_counts["IPv6 Packets"] += 1
+                    # summary_counts["IPv6 Packets"] += 1
                     ipv6_layer = packet[IPv6]
                     csv_writers["ipv6_headers.csv"].writerow({
                         "Packet Number": packet_number,
@@ -110,7 +110,7 @@ def analyze_selected_headers(pcap_file):
                     })
 
                 if TCP in packet:
-                    summary_counts["TCP Packets"] += 1
+                    # summary_counts["TCP Packets"] += 1
                     tcp_layer = packet[TCP]
                     
                     if tcp_layer.flags == 18:  #SYN-ACK 
@@ -128,14 +128,14 @@ def analyze_selected_headers(pcap_file):
                         "ECE": bool(tcp_layer.flags & 0x40)
                     })
                 elif UDP in packet:
-                        summary_counts["UDP Packets"] += 1
+                        # summary_counts["UDP Packets"] += 1
                         udp_layer = packet[UDP]
                         csv_writers["udp_headers.csv"].writerow({
                             "Packet Number": packet_number,
                             "UDP Length": udp_layer.len
                         })
                 elif ICMP in packet:
-                    summary_counts["ICMP Packets"] += 1
+                    # summary_counts["ICMP Packets"] += 1
                     icmp_layer = packet[ICMP]
                     csv_writers["icmp_headers.csv"].writerow({
                         "Packet Number": packet_number,
@@ -143,7 +143,7 @@ def analyze_selected_headers(pcap_file):
                     })
 
                 elif SCTP in packet:
-                    summary_counts["SCTP Packets"] += 1
+                    # summary_counts["SCTP Packets"] += 1
                     sctp_layer = packet[SCTP]
                     
                     if IP in packet:
@@ -160,7 +160,7 @@ def analyze_selected_headers(pcap_file):
                     })
 
                 else:
-                    summary_counts["Other Protocols"] += 1
+                    # summary_counts["Other Protocols"] += 1
                     csv_writers["other_packets.csv"].writerow({
                         "Packet Number": packet_number,
                     })
@@ -169,10 +169,10 @@ def analyze_selected_headers(pcap_file):
 
             progress.close()
 
-        summary_counts["TCP Connections"] = len(tcp_connections)
-        summary_counts["SCTP Connections"] = len(sctp_connections)
+        # summary_counts["TCP Connections"] = len(tcp_connections)
+        # summary_counts["SCTP Connections"] = len(sctp_connections)
         
-        summary_writer.writerow(summary_counts)
+        # summary_writer.writerow(summary_counts)
         print(f"Packet reading finished. Total time spent: {time.time() - start_time:.2f} seconds")
         print(f"Total TCP connections: {len(tcp_connections)}")
         print(f"Total SCTP connections: {len(sctp_connections)}")
@@ -180,7 +180,7 @@ def analyze_selected_headers(pcap_file):
     finally:
         for csv_file in csv_files.values():
             csv_file.close()
-        if summary_file:       summary_file.close() 
+        # if summary_file:       summary_file.close() 
 
 if __name__ == "__main__":
     pcap_file = "split_trace_1.pcap" 
