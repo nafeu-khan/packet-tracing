@@ -1,4 +1,4 @@
-from scapy.all import IP, IPv6, TCP, UDP, ICMP, SCTP, PcapReader, Raw
+from scapy.all import IP, IPv6, TCP, UDP, ICMP, SCTP, PcapReader
 from tqdm import tqdm
 import csv
 import os
@@ -56,18 +56,11 @@ def analyze_selected_headers(pcap_file):
             "fieldnames": ["Packet Number", "Source IP", "Destination IP", "Source Port", "Destination Port",
                            "Flow Label", "Traffic Class", "Next Header", "Packet Length", 
                            "SCTP-Verification_Tag", "SCTP-Checksum"]
-        },
-        # Add the HTTP detection results
-        "http_connections.csv": {
-            "fieldnames": ["HTTP/1.x", "HTTP/2", "HTTP/3"]
         }
     }
 
     # Initialize data buffers
     data_buffers = {key: [] for key in csv_configs.keys()}
-
-    # HTTP connection counters
-    http_counts = {"HTTP/1.x": 0, "HTTP/2": 0, "HTTP/3": 0}
 
     try:
         with PcapReader(pcap_file) as reader:
@@ -180,42 +173,10 @@ def analyze_selected_headers(pcap_file):
                             "SCTP-Checksum": sctp_layer.cksum
                         })
                         data_buffers["ipv6_sctp.csv"].append(sctp_data)
-                    # Detect HTTP connections
-                    if packet.haslayer(TCP):
-                        # Check for HTTP/1.x
-                        if packet[TCP].dport == 80 or packet[TCP].sport == 80:
-                            if packet.haslayer(Raw):
-                                payload = bytes(packet[Raw].load)
-                                print(f"Packet {packet_number} payload: {payload}")
-                                if b"HTTP/1.1" in payload:
-                                    print(f"HTTP/1 detected in packet {packet_number}")
-                                    http_counts["HTTP/1.x"] += 1
-
-                        # Check for HTTP/2 (TLS on port 443)
-                        elif packet[TCP].dport == 443 or packet[TCP].sport == 443:
-                            if packet.haslayer(Raw):
-                                payload = bytes(packet[Raw].load)
-                                print(f"Packet {packet_number} payload: {payload}")
-                                if b"h2" in payload:  # ALPN negotiation for HTTP/2
-                                    print(f"HTTP/2 detected in packet {packet_number}")
-                                    http_counts["HTTP/2"] += 1
-
-                    elif packet.haslayer(UDP):
-                        # Check for HTTP/3 (QUIC)
-                        if packet[UDP].dport == 443 or packet[UDP].sport == 443:
-                            if packet.haslayer(Raw):
-                                payload = bytes(packet[Raw].load)
-                                print(f"Packet {packet_number} payload: {payload}")
-                                if b"quic" in payload.lower():
-                                    print(f"HTTP/3 detected in packet {packet_number}")
-                                    http_counts["HTTP/3"] += 1
 
                 progress.update(1)
 
             progress.close()
-
-        # Append the HTTP connection counts to the HTTP CSV
-        data_buffers["http_connections.csv"].append(http_counts)
 
         # Write accumulated data to separate CSV files
         for filename, rows in data_buffers.items():
@@ -232,5 +193,5 @@ def analyze_selected_headers(pcap_file):
 
 if __name__ == "__main__":
     # pcap_file = "200608241400.dump"
-    pcap_file = "split_trace_2019.pcap"
+    pcap_file = "split_trace_1.pcap"
     analyze_selected_headers(pcap_file)
