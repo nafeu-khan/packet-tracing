@@ -113,29 +113,31 @@ def plot_data(data_summary, level):
     # Extract x-axis (keys) and y-axis (values) data
     x_axis = list(data_summary.keys())  # Keys like '2023', '2023-11', '2023-11-01'
 
-    # Prepare plots for each statistic
+    # Prepare the statistics to plot
     stats = ["Total Traces", "Total Packets", "Total Trace Size (GB)",
              "Total Transferred Bytes (TB)", "Total IP Packets", "Total IP6 Packets"]
 
-    for stat in stats:
-        y_axis = [data_summary[key][stat] for key in x_axis]  # Use the aggregated values
+    plt.figure(figsize=(12, 8))
+    drawable_stats=["Total IP Packets", "Total IP6 Packets"]
+    # Plot each statistic as a separate line
+    for stat in drawable_stats:
+        y_axis = [data_summary[key][stat] for key in x_axis]
+        plt.plot(x_axis, y_axis, marker="o", label=stat)  # Add a line for each stat
 
-        # Plot the data
-        plt.figure(figsize=(10, 6))
-        plt.plot(x_axis, y_axis, marker="o", label=stat)
-        plt.title(f"{stat} over {level.capitalize()}s")
-        plt.xlabel(f"{level.capitalize()}s")
-        plt.ylabel(stat)
-        plt.xticks(rotation=45)
-        plt.legend()
-        plt.grid()
-        plt.tight_layout()
+    # Configure the graph
+    plt.title(f"Network Traffic Statistics over {level.capitalize()}s")
+    plt.xlabel(f"{level.capitalize()}s")
+    plt.ylabel("Values")
+    plt.xticks(rotation=45)
+    plt.legend()  # Add a legend for clarity
+    plt.grid()
+    plt.tight_layout()
 
-        # Save the plot
-        file_name = os.path.join(output_dir, f"{stat.replace(' ', '_')}_over_{level}.png")
-        plt.savefig(file_name)
-        plt.close()
-        print(f"Saved graph: {file_name}")
+    # Save the combined plot
+    file_name = os.path.join(output_dir, f"combined_statistics_over_{level}.png")
+    plt.savefig(file_name)
+    plt.close()
+    print(f"Saved combined graph: {file_name}")
 
 def main():
     args = parse_arguments()

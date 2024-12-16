@@ -4,7 +4,7 @@ scapy/src/
 */*.dump
 */*.pcap
 */extracted_data
-
+Paper1/mawi_graphs/
 scapy/practice/*.dump
 scapy/practice/*.pcap
 scapy/thesis_work/*.csv
